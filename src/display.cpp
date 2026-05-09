@@ -172,7 +172,14 @@ void draw_frame(const struct tm &t, bool ble_connected, bool ble_synced,
         canvas.drawString(msg, CX, y);
     }
 
-    canvas.pushSprite(20, 20);  // centre 200x200 sprite on 240x240 screen
+    // Clear the 20 px border around the sprite every frame so no ghost pixels
+    // accumulate from arc/circle drawing that clips slightly outside the canvas.
+    tft.fillRect(  0,   0, 240,  20, TFT_BLACK);  // top
+    tft.fillRect(  0, 220, 240,  20, TFT_BLACK);  // bottom
+    tft.fillRect(  0,  20,  20, 200, TFT_BLACK);  // left
+    tft.fillRect(220,  20,  20, 200, TFT_BLACK);  // right
+
+    canvas.pushSprite(20, 20);  // centre 200×200 sprite on 240×240 screen
 }
 
 void display_flip()
