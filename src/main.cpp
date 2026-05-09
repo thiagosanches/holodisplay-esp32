@@ -13,7 +13,8 @@
 #include "display.h"
 #include "ble_nus.h"
 
-void setup() {
+void setup()
+{
     Serial.begin(115200);
 
     // Epoch 0 until BLE TIME: arrives
@@ -24,10 +25,11 @@ void setup() {
     ble_init();
 }
 
-void loop() {
-    static uint32_t last_draw   = 0;
+void loop()
+{
+    static uint32_t last_draw = 0;
     static uint32_t msg_recv_ms = 0;
-    static char     cur_msg[256] = "";
+    static char cur_msg[256] = "";
 
     uint32_t now = millis();
 
@@ -35,11 +37,14 @@ void loop() {
         msg_recv_ms = now;
 
     // Redraw at 200 ms -- smooth for animations, easy on the CPU
-    if (now - last_draw >= 200) {
+    if (now - last_draw >= 200)
+    {
         last_draw = now;
 
-        time_t epoch; time(&epoch);
-        struct tm t;  localtime_r(&epoch, &t);
+        time_t epoch;
+        time(&epoch);
+        struct tm t;
+        localtime_r(&epoch, &t);
 
         draw_frame(t, ble_is_connected(), ble_is_synced(),
                    cur_msg, now - msg_recv_ms, now);

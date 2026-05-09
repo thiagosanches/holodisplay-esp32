@@ -9,48 +9,58 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // NUS UUIDs  (Nordic UART Service — recognised by Tasker's BLE plugin)
 // ─────────────────────────────────────────────────────────────────────────────
-#define NUS_SVC_UUID  "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-#define NUS_RX_UUID   "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"  // phone → ESP32
-#define NUS_TX_UUID   "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // ESP32 → phone
+#define NUS_SVC_UUID "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
+#define NUS_RX_UUID "6E400002-B5A3-F393-E0A9-E50E24DCCA9E" // phone → ESP32
+#define NUS_TX_UUID "6E400003-B5A3-F393-E0A9-E50E24DCCA9E" // ESP32 → phone
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Internal state (file-scope only)
 // ─────────────────────────────────────────────────────────────────────────────
 static volatile bool s_connected = false;
-static volatile bool s_synced    = false;
-static volatile bool s_new_msg   = false;
-static portMUX_TYPE  s_mux       = portMUX_INITIALIZER_UNLOCKED;
-static char          s_msg[256]  = "";
+static volatile bool s_synced = false;
+static volatile bool s_new_msg = false;
+static portMUX_TYPE s_mux = portMUX_INITIALIZER_UNLOCKED;
+static char s_msg[256] = "";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BLE callbacks
 // ─────────────────────────────────────────────────────────────────────────────
-class ServerCB : public BLEServerCallbacks {
-    void onConnect(BLEServer*)      override { s_connected = true; }
-    void onDisconnect(BLEServer* s) override {
+class ServerCB : public BLEServerCallbacks
+{
+    void onConnect(BLEServer *) override { s_connected = true; }
+    void onDisconnect(BLEServer *s) override
+    {
         s_connected = false;
-        s->startAdvertising();  // auto-restart so Tasker can reconnect
+        s->startAdvertising(); // auto-restart so Tasker can reconnect
     }
 };
 
-class RxCB : public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic* c) override {
+class RxCB : public BLECharacteristicCallbacks
+{
+    void onWrite(BLECharacteristic *c) override
+    {
         std::string v = c->getValue();
-        if (v.empty()) return;
+        if (v.empty())
+            return;
 
-        if (v.rfind("TIME:", 0) == 0) {
+        if (v.rfind("TIME:", 0) == 0)
+        {
             // TIME:<unix_epoch_seconds>
             long long epoch = atoll(v.c_str() + 5);
-            if (epoch > 1000000000LL) {
-                struct timeval tv = { (time_t)epoch, 0 };
+            if (epoch > 1000000000LL)
+            {
+                struct timeval tv = {(time_t)epoch, 0};
                 settimeofday(&tv, nullptr);
                 s_synced = true;
                 Serial.printf("[BLE] TIME set: %lld\n", epoch);
             }
-        } else {
+        }
+        else
+        {
             // MSG:<text>  or bare text
             const char *text = v.c_str();
-            if (v.rfind("MSG:", 0) == 0) text += 4;
+            if (v.rfind("MSG:", 0) == 0)
+                text += 4;
             taskENTER_CRITICAL(&s_mux);
             strncpy(s_msg, text, sizeof(s_msg) - 1);
             s_msg[sizeof(s_msg) - 1] = '\0';
@@ -64,7 +74,8 @@ class RxCB : public BLECharacteristicCallbacks {
 // ─────────────────────────────────────────────────────────────────────────────
 // Public API
 // ─────────────────────────────────────────────────────────────────────────────
-void ble_init() {
+void ble_init()
+{
     BLEDevice::init("HoloDisplay");
     BLEServer *srv = BLEDevice::createServer();
     srv->setCallbacks(new ServerCB());
@@ -88,10 +99,12 @@ void ble_init() {
 }
 
 bool ble_is_connected() { return s_connected; }
-bool ble_is_synced()    { return s_synced; }
+bool ble_is_synced() { return s_synced; }
 
-bool ble_take_message(char *out, int len) {
-    if (!s_new_msg) return false;
+bool ble_take_message(char *out, int len)
+{
+    if (!s_new_msg)
+        return false;
     taskENTER_CRITICAL(&s_mux);
     strncpy(out, s_msg, len - 1);
     out[len - 1] = '\0';
