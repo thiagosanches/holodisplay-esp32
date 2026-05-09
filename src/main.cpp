@@ -21,7 +21,7 @@ void setup()
     struct timeval tv = {0, 0};
     settimeofday(&tv, nullptr);
 
-    setenv("TZ", "BRT3", 1);  // Brazil: UTC-3, no DST since 2019
+    setenv("TZ", "BRT3", 1); // Brazil: UTC-3, no DST since 2019
     tzset();
 
     display_init();
