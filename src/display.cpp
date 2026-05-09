@@ -104,7 +104,7 @@ void draw_frame(const struct tm &t, bool ble_connected, bool ble_synced,
     float sweep = t.tm_sec / 60.0f * 360.0f;
     if (sweep > 0.5f)
     {
-        uint16_t col = (t.tm_sec < 30) ? 0x07FFu : 0xFD20u;
+        uint16_t col = (t.tm_sec < 30) ? 0x07FFu : 0xF81Fu;
         canvas.drawArc(CX, CY, CR, CR - 4, 270.0f, 270.0f + sweep, col);
     }
 
