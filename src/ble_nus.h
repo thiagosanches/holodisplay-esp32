@@ -8,3 +8,6 @@ bool ble_is_synced();
 // Returns true and copies the pending message into `out` (max `len` bytes),
 // then clears the pending flag.  Safe to call from loop().
 bool ble_take_message(char *out, int len);
+
+// Returns true once when a FLIP command is received, then resets.
+bool ble_take_flip();

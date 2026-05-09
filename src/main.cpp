@@ -36,6 +36,9 @@ void loop()
     if (ble_take_message(cur_msg, sizeof(cur_msg)))
         msg_recv_ms = now;
 
+    if (ble_take_flip())
+        display_flip();
+
     // Redraw at 200 ms -- smooth for animations, easy on the CPU
     if (now - last_draw >= 200)
     {

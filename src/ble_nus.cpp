@@ -17,10 +17,11 @@
 // Internal state (file-scope only)
 // ─────────────────────────────────────────────────────────────────────────────
 static volatile bool s_connected = false;
-static volatile bool s_synced = false;
-static volatile bool s_new_msg = false;
-static portMUX_TYPE s_mux = portMUX_INITIALIZER_UNLOCKED;
-static char s_msg[256] = "";
+static volatile bool s_synced    = false;
+static volatile bool s_new_msg   = false;
+static volatile bool s_flip      = false;
+static portMUX_TYPE  s_mux       = portMUX_INITIALIZER_UNLOCKED;
+static char          s_msg[256]  = "";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BLE callbacks
@@ -54,6 +55,11 @@ class RxCB : public BLECharacteristicCallbacks
                 s_synced = true;
                 Serial.printf("[BLE] TIME set: %lld\n", epoch);
             }
+        }
+        else if (v == "FLIP")
+        {
+            s_flip = true;
+            Serial.println("[BLE] FLIP");
         }
         else
         {
@@ -100,7 +106,11 @@ void ble_init()
 
 bool ble_is_connected() { return s_connected; }
 bool ble_is_synced() { return s_synced; }
-
+bool ble_take_flip() {
+    if (!s_flip) return false;
+    s_flip = false;
+    return true;
+}
 bool ble_take_message(char *out, int len)
 {
     if (!s_new_msg)

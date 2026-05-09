@@ -2,6 +2,7 @@
 #include "display.h"
 #include <Arduino.h>
 #include <LovyanGFX.hpp>
+#include <Preferences.h>
 #include <math.h>
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -63,16 +64,21 @@ public:
     }
 };
 
-static LGFX tft;
+static LGFX             tft;
 static lgfx::LGFX_Sprite canvas(&tft); // off-screen buffer → no flicker
+static int              s_rotation = 0;  // 0 = normal, 2 = 180°
+static Preferences      s_prefs;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public API
 // ─────────────────────────────────────────────────────────────────────────────
 void display_init()
 {
+    s_prefs.begin("display", false);
+    s_rotation = s_prefs.getInt("rotation", 4);  // default: mirrored for beam splitter
+
     tft.init();
-    tft.setRotation(0);
+    tft.setRotation(s_rotation);
     tft.setBrightness(0);      // backlight off while we flush
     tft.fillScreen(TFT_BLACK); // wipe full 240×240 panel RAM
     tft.fillScreen(TFT_BLACK); // second pass — ensures no stale pixels
@@ -166,5 +172,15 @@ void draw_frame(const struct tm &t, bool ble_connected, bool ble_synced,
         canvas.drawString(msg, CX, y);
     }
 
-    canvas.pushSprite(20, 20); // centre 200×200 sprite on 240×240 screen
+    canvas.pushSprite(20, 20);  // centre 200x200 sprite on 240x240 screen
+}
+
+void display_flip()
+{
+    // Toggle between normal (0) and horizontally mirrored (4)
+    s_rotation = (s_rotation == 0) ? 4 : 0;
+    tft.setRotation(s_rotation);
+    s_prefs.putInt("rotation", s_rotation);  // persist across reboots
+    Serial.printf("[DISPLAY] rotation -> %d (%s)\n", s_rotation,
+                  s_rotation == 4 ? "mirrored" : "normal");
 }

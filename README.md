@@ -1,6 +1,24 @@
 # HoloDisplay — ESP32-C3 Round Clock
 
-A minimal, clean firmware for the **Elecrow ESP32-2424S012N** (1.28" round GC9A01 display, ESP32-C3) that shows a live clock face and receives messages and time sync over Bluetooth LE — designed to work with **Android Tasker**.
+A minimal, clean firmware for the **Elecrow ESP32-2424S012N** (1.28" round GC9A01 display, ESP32-C3) that shows a live clock face and receives messages and time sync over Bluetooth LE — designed to work with **Android Tasker** and a **beam splitter cube** for a holographic effect.
+
+## How the Holographic Effect Works
+
+The display sits below (or to the side of) a **beam splitter cube** — a half-silvered glass block that reflects ~50% of incoming light while transmitting the rest.
+
+When the display image is reflected off the cube face toward the viewer, it appears to **float in mid-air** in front of the cube. Because the reflection acts like a mirror, the image must be **pre-flipped horizontally** on the display so it reads correctly after reflection — this firmware does that by default (rotation 4 in LovyanGFX).
+
+This is a variation of the [Pepper's Ghost](https://en.wikipedia.org/wiki/Pepper%27s_ghost) illusion, adapted for small embedded displays using a [beam splitter cube](https://en.wikipedia.org/wiki/Beam_splitter) instead of a large angled pane of glass.
+
+```
+          👁  viewer
+          │
+   ┌──────┴──────┐
+   │  beam split │  ← cube reflects display upward toward viewer
+   └──────┬──────┘
+          │
+     [display 🕐]   ← horizontally mirrored so reflection reads correctly
+```
 
 ## Features
 
