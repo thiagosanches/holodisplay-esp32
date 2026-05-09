@@ -95,6 +95,47 @@ static const char *DAYS[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 static const char *MONS[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
+// Strip UTF-8 diacritics → ASCII so FreeSans fonts can render them
+static void utf8_to_ascii(const char *src, char *dst, int dst_len)
+{
+    // Table of common Latin-1 supplement (U+00C0–U+00FF) → ASCII
+    static const char latin1_map[64] = {
+        'A','A','A','A','A','A','A','C','E','E','E','E','I','I','I','I',
+        'D','N','O','O','O','O','O', 0, 'O','U','U','U','U','Y','T','s',
+        'a','a','a','a','a','a','a','c','e','e','e','e','i','i','i','i',
+        'd','n','o','o','o','o','o', 0, 'o','u','u','u','u','y','t','y'
+    };
+    int j = 0;
+    const uint8_t *s = (const uint8_t *)src;
+    while (*s && j < dst_len - 1) {
+        if (*s < 0x80) {
+            dst[j++] = (char)*s++;
+        } else if ((*s & 0xE0) == 0xC0) {
+            // 2-byte sequence: U+0080–U+07FF
+            uint32_t cp = (*s & 0x1F) << 6;
+            s++;
+            if (*s) cp |= (*s++ & 0x3F);
+            if (cp >= 0xC0 && cp <= 0xFF) {
+                char c = latin1_map[cp - 0xC0];
+                if (c) dst[j++] = c;
+            } else {
+                dst[j++] = '?';
+            }
+        } else if ((*s & 0xF0) == 0xE0) {
+            // 3-byte sequence — skip (CJK, emoji, etc.)
+            s++; if (*s) s++; if (*s) s++;
+            dst[j++] = '?';
+        } else if ((*s & 0xF8) == 0xF0) {
+            // 4-byte sequence — skip
+            s++; if (*s) s++; if (*s) s++; if (*s) s++;
+            dst[j++] = '?';
+        } else {
+            s++; // invalid byte, skip
+        }
+    }
+    dst[j] = '\0';
+}
+
 void draw_frame(const struct tm &t, bool ble_connected, bool ble_synced,
                 const char *msg, uint32_t msg_age_ms, uint32_t now_ms)
 {
@@ -163,13 +204,15 @@ void draw_frame(const struct tm &t, bool ble_connected, bool ble_synced,
     // ── Message (slides up from below over 500 ms) ────────────────────────────
     if (msg && msg[0])
     {
+        char ascii_msg[256];
+        utf8_to_ascii(msg, ascii_msg, sizeof(ascii_msg));
         int y = (msg_age_ms < 500)
                     ? 168 + (int)((1.0f - msg_age_ms / 500.0f) * 24.0f)
                     : 168;
         canvas.setFont(&lgfx::fonts::FreeSans9pt7b);
         canvas.setTextColor(TFT_YELLOW, TFT_BLACK);
         canvas.setTextDatum(lgfx::TC_DATUM);
-        canvas.drawString(msg, CX, y);
+        canvas.drawString(ascii_msg, CX, y);
     }
 
     // Clear the 20 px border around the sprite every frame so no ghost pixels
