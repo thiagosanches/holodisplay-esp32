@@ -20,10 +20,9 @@ This is a variation of the [Pepper's Ghost](https://en.wikipedia.org/wiki/Pepper
      [display 🕐]   ← horizontally mirrored so reflection reads correctly
 ```
 
-
-
 https://github.com/user-attachments/assets/ab0af6e0-18c5-4fb8-ae2b-6a90c216d312
 
+<img width="444" height="203" alt="image" src="https://github.com/user-attachments/assets/8ce0a89f-d326-4fb3-8ff8-57eebf6f19ad" />
 
 ## Features
 
