@@ -24,9 +24,10 @@ https://github.com/user-attachments/assets/ab0af6e0-18c5-4fb8-ae2b-6a90c216d312
 
 <img width="444" height="203" alt="image" src="https://github.com/user-attachments/assets/8ce0a89f-d326-4fb3-8ff8-57eebf6f19ad" />
 
+[FreeCAD file](https://github.com/thiagosanches/my-freecad-files/blob/main/esp32-c3-round-display-beamsplitter-cube.FCStd)
+
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/9ca0011c-a659-468d-a7d6-b2da22277334" />
 
-[FreeCAD file](https://github.com/thiagosanches/my-freecad-files/blob/main/esp32-c3-round-display-beamsplitter-cube.FCStd)
 
 ## Features
 
