@@ -1,5 +1,7 @@
 # HoloDisplay — ESP32-C3 Round Clock
 
+https://github.com/thiagosanches/holodisplay-esp32/raw/master/holo-footage.mp4
+
 A minimal, clean firmware for the **Elecrow ESP32-2424S012N** (1.28" round GC9A01 display, ESP32-C3) that shows a live clock face and receives messages and time sync over Bluetooth LE — designed to work with **Android Tasker** and a **beam splitter cube** for a holographic effect.
 
 ## How the Holographic Effect Works
