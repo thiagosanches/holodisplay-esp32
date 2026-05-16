@@ -1,6 +1,6 @@
 # HoloDisplay — ESP32-C3 Round Clock
 
-A minimal, clean firmware for the **Elecrow ESP32-2424S012N** (1.28" round GC9A01 display, ESP32-C3) that shows a live clock face and receives messages and time sync over Bluetooth LE — designed to work with **Android Tasker** and a **beam splitter cube** for a holographic effect.
+A minimal, clean firmware for the **Elecrow ESP32-2424S012N** (1.28" round GC9A01 display, ESP32-C3) that shows a live clock face and receives messages and time sync over WiFi — designed to work with **Android Tasker** and a **beam splitter cube** for a holographic effect.
 
 ## How the Holographic Effect Works
 
@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/ab0af6e0-18c5-4fb8-ae2b-6a90c216d312
 ## Features
 
 - **Animated clock face** — second sweep arc (cyan → orange), hour tick marks, bezel ring
-- **WiFi message display** — compatible with Tasker, nRF Connect, and any NUS client
+- **WiFi message display** — compatible with any HTTP client
 - **Time sync** via WiFi — no RTC chip required
 - **Message display** — text slides up from the bottom of the screen
 - **WiFi heartbeat indicator** — pulses green when connected
