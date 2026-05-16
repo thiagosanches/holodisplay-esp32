@@ -8,15 +8,15 @@
     (bare text)         -- treated as MSG
 */
 
-#include "ble_nus.h"
 #include "display.h"
+#include "wifi_cmd.h"
 #include <Arduino.h>
 #include <time.h>
 
 void setup() {
   Serial.begin(115200);
 
-  // Epoch 0 until BLE TIME: arrives
+  // Epoch 0 until WiFi TIME: arrives
   struct timeval tv = {0, 0};
   settimeofday(&tv, nullptr);
 
@@ -24,20 +24,21 @@ void setup() {
   tzset();
 
   display_init();
-  ble_init();
+  wifi_init();
 }
 
 void loop() {
+  wifi_handle();
   static uint32_t last_draw = 0;
   static uint32_t msg_recv_ms = 0;
   static char cur_msg[256] = "";
 
   uint32_t now = millis();
 
-  if (ble_take_message(cur_msg, sizeof(cur_msg)))
+  if (wifi_take_message(cur_msg, sizeof(cur_msg)))
     msg_recv_ms = now;
 
-  if (ble_take_flip())
+  if (wifi_take_flip())
     display_flip();
 
   // Redraw at 200 ms -- smooth for animations, easy on the CPU
@@ -49,7 +50,7 @@ void loop() {
     struct tm t;
     localtime_r(&epoch, &t);
 
-    draw_frame(t, ble_is_connected(), ble_is_synced(), cur_msg, now - msg_recv_ms, now);
+    draw_frame(t, wifi_is_connected(), wifi_is_synced(), cur_msg, now - msg_recv_ms, now);
   }
 
   delay(20);

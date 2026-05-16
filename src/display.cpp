@@ -143,7 +143,7 @@ static void utf8_to_ascii(const char *src, char *dst, int dst_len) {
   dst[j] = '\0';
 }
 
-void draw_frame(const struct tm &t, bool ble_connected, bool ble_synced, const char *msg,
+void draw_frame(const struct tm &t, bool wifi_connected, bool wifi_synced, const char *msg,
                 uint32_t msg_age_ms, uint32_t now_ms) {
   canvas.fillScreen(TFT_BLACK);
 
@@ -163,17 +163,17 @@ void draw_frame(const struct tm &t, bool ble_connected, bool ble_synced, const c
                     i == 0 ? TFT_WHITE : 0x8410u);
   }
 
-  // ── BLE indicator (800 ms heartbeat pulse) ────────────────────────────────
-  bool pulse = ble_connected && ((now_ms / 800) & 1) == 0;
-  uint16_t ble_col = ble_connected ? (pulse ? TFT_GREEN : 0x03E0u) : 0x2104u;
-  canvas.fillCircle(CX - 22, 26, 5, ble_col);
+  // ── WiFi indicator (800 ms heartbeat pulse) ────────────────────────────────
+  bool pulse = wifi_connected && ((now_ms / 800) & 1) == 0;
+  uint16_t wifi_col = wifi_connected ? (pulse ? TFT_GREEN : 0x03E0u) : 0x2104u;
+  canvas.fillCircle(CX - 22, 26, 5, wifi_col);
   canvas.setFont(&lgfx::fonts::Font2);
   canvas.setTextDatum(lgfx::ML_DATUM);
-  canvas.setTextColor(ble_connected ? TFT_GREEN : 0x4208u, TFT_BLACK);
-  canvas.drawString("BLE", CX - 14, 26);
+  canvas.setTextColor(wifi_connected ? TFT_GREEN : 0x4208u, TFT_BLACK);
+  canvas.drawString("NET", CX - 14, 26);
 
   // ── "no sync" badge ───────────────────────────────────────────────────────
-  if (!ble_synced) {
+  if (!wifi_synced) {
     canvas.setTextDatum(lgfx::MR_DATUM);
     canvas.setTextColor(0x8410u, TFT_BLACK);
     canvas.drawString("no sync", 196, 26); // right-align within 200px wide canvas
