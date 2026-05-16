@@ -29,13 +29,17 @@ https://github.com/user-attachments/assets/ab0af6e0-18c5-4fb8-ae2b-6a90c216d312
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/9ca0011c-a659-468d-a7d6-b2da22277334" />
 
 
+## HTML FrontEnd
+
+![alt text](image.png)
+
 ## Features
 
 - **Animated clock face** — second sweep arc (cyan → orange), hour tick marks, bezel ring
-- **BLE NUS** (Nordic UART Service) — compatible with Tasker, nRF Connect, and any NUS client
-- **Time sync** via BLE — no RTC chip required
+- **WiFi message display** — compatible with Tasker, nRF Connect, and any NUS client
+- **Time sync** via WiFi — no RTC chip required
 - **Message display** — text slides up from the bottom of the screen
-- **BLE heartbeat indicator** — pulses green when connected
+- **WiFi heartbeat indicator** — pulses green when connected
 - **No-flicker rendering** — full frame rendered in an off-screen sprite before pushing
 - **Clean boot** — backlight off during flush, no ghost pixels from previous firmware
 
@@ -75,32 +79,6 @@ pio run -e holographic_esp32_display --target upload
 pio device monitor
 ```
 
-## BLE Protocol
-
-The device advertises as **`HoloDisplay`** using the Nordic UART Service (NUS).
-
-| Characteristic | UUID |
-|----------------|------|
-| Service | `6E400001-B5A3-F393-E0A9-E50E24DCCA9E` |
-| RX (write here) | `6E400002-B5A3-F393-E0A9-E50E24DCCA9E` |
-| TX (notify) | `6E400003-B5A3-F393-E0A9-E50E24DCCA9E` |
-
-### Commands (write to RX characteristic)
-
-| Command | Example | Effect |
-|---------|---------|--------|
-| `TIME:<epoch>` | `TIME:1746835200` | Sync the clock |
-| `MSG:<text>` | `MSG:Hello!` | Show a message |
-| `<bare text>` | `Meeting now` | Same as MSG |
-
-## Tasker Setup
-
-1. Install the **BLE Scanner** or use Tasker's built-in BLE Write action
-2. Connect to `HoloDisplay`
-3. Add a task with **BLE Write** → service `6E400001...`, characteristic `6E400002...`
-4. To sync time: write `TIME:%TIMES` (Tasker's Unix epoch variable)
-5. To push a notification: write `MSG:%NTITLE`
-
 ## Adding a GIF
 
 LovyanGFX has built-in GIF decoding. To embed an animation:
@@ -119,19 +97,6 @@ tft.drawGif(animation_gif, animation_gif_len, x, y);
 ```
 
 Keep GIFs small (e.g. 80×80 px) — the ESP32-C3 has no PSRAM.
-
-## Project Structure
-
-```
-src/
-  main.cpp       — setup / loop
-  display.h/.cpp — LGFX config, clock face rendering
-  ble_nus.h/.cpp — BLE NUS server, TIME/MSG command handling
-boards/
-  esp32-2424S012N.json — custom board definition
-partitions.csv         — OTA-ready partition table
-platformio.ini
-```
 
 ## License
 
