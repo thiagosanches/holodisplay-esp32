@@ -1,5 +1,8 @@
 #include "wifi_cmd.h"
+#include "display.h"
+#include "index_html.h"
 #include <Arduino.h>
+#include <Update.h>
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiManager.h>
@@ -33,6 +36,10 @@ static void handle_cmd() {
   } else if (v == "FLIP") {
     s_flip = true;
     Serial.println("[WiFi] FLIP");
+  } else if (v.startsWith("ROTATE:")) {
+    int r = atoi(v.c_str() + 7);
+    if (r >= 0 && r <= 7)
+      display_set_rotation(r);
   } else {
     const char *text = v.c_str();
     if (v.startsWith("MSG:"))
@@ -71,11 +78,32 @@ void wifi_init() {
 
   s_server.on("/cmd", HTTP_POST, handle_cmd);
   s_server.on("/status", HTTP_GET, []() {
-  char buf[128];
-  snprintf(buf, sizeof(buf), "{\"ip\":\"%s\",\"synced\":%s,\"uptime\":%lu}",
-           WiFi.localIP().toString().c_str(), s_synced ? "true" : "false", millis() / 1000);
-  s_server.send(200, "application/json", buf);
-});
+    char buf[128];
+    snprintf(buf, sizeof(buf), "{\"ip\":\"%s\",\"synced\":%s,\"uptime\":%lu}",
+             WiFi.localIP().toString().c_str(), s_synced ? "true" : "false", millis() / 1000);
+    s_server.send(200, "application/json", buf);
+  });
+  s_server.on("/", HTTP_GET, []() { s_server.send_P(200, "text/html", INDEX_HTML); });
+
+  s_server.on(
+      "/ota", HTTP_POST,
+      []() {
+        s_server.send(200, "text/plain", Update.hasError() ? "FAIL" : "OK. Rebooting...");
+        delay(500);
+        ESP.restart();
+      },
+      []() {
+        HTTPUpload &up = s_server.upload();
+        if (up.status == UPLOAD_FILE_START) {
+          Serial.printf("[OTA] Start: %s\n", up.filename.c_str());
+          Update.begin();
+        } else if (up.status == UPLOAD_FILE_WRITE) {
+          Update.write(up.buf, up.currentSize);
+        } else if (up.status == UPLOAD_FILE_END) {
+          Update.end(true);
+          Serial.println("[OTA] Done");
+        }
+      });
 
   s_server.begin();
   Serial.println("[WiFi] HTTP server on port 80");

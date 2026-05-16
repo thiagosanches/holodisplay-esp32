@@ -1,5 +1,5 @@
 /*
-  HoloDisplay -- ESP32-C3 round clock with BLE NUS
+  HoloDisplay -- ESP32-C3 round clock with WiFi message display
   Board : ESP32-2424S012N  (GC9A01 240x240, no touch)
 
   Tasker / nRF Connect -> write to NUS RX characteristic:
@@ -49,6 +49,9 @@ void loop() {
     time(&epoch);
     struct tm t;
     localtime_r(&epoch, &t);
+
+    if (cur_msg[0] && now - msg_recv_ms >= 30000)
+      cur_msg[0] = '\0';
 
     draw_frame(t, wifi_is_connected(), wifi_is_synced(), cur_msg, now - msg_recv_ms, now);
   }

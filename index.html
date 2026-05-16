@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>HoloDisplay — ESP32-C3 Round Clock</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 0 16px
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      font-size: 1em;
+      cursor: pointer
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 4px 0;
+      box-sizing: border-box
+    }
+
+    .row {
+      display: flex;
+      gap: 8px
+    }
+
+    .row button {
+      flex: 1
+    }
+  </style>
+</head>
+
+<body>
+  <h2>HoloDisplay - ESP32-C3 Round Clock</h2>
+
+  <h3>Rotation</h3>
+  <div class="row">
+    <button onclick="cmd('ROTATE:0')">0°</button>
+    <button onclick="cmd('ROTATE:1')">90°</button>
+    <button onclick="cmd('ROTATE:2')">180°</button>
+    <button onclick="cmd('ROTATE:3')">270°</button>
+  </div>
+  <div class="row">
+    <button onclick="cmd('ROTATE:4')">0° mirror</button>
+    <button onclick="cmd('ROTATE:6')">180° mirror</button>
+  </div>
+  <button onclick="cmd('FLIP')">Toggle Flip</button>
+
+  <h3>Message</h3>
+  <input id="msg" placeholder="Type a message...">
+  <button onclick="cmd('MSG:'+document.getElementById('msg').value)">Send</button>
+
+  <h3>Firmware Update - WARNING</h3>
+  <input type="file" id="fw" accept=".bin">
+  <button onclick="ota()">Flash</button>
+  <span id="ota-status"></span>
+
+  <script>
+    function cmd(body) {
+      fetch('/cmd', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body })
+        .then(r => r.text()).then(t => console.log(t));
+    }
+
+    function ota() {
+      const f = document.getElementById('fw').files[0];
+      if (!f) return;
+      document.getElementById('ota-status').textContent = 'Uploading...';
+      const fd = new FormData();
+      fd.append('firmware', f, f.name);
+      fetch('/ota', { method: 'POST', body: fd })
+        .then(r => r.text())
+        .then(t => { document.getElementById('ota-status').textContent = t; });
+    }
+  </script>
+</body>
+
+</html>

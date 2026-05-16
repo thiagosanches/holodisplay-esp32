@@ -147,6 +147,52 @@ void draw_frame(const struct tm &t, bool wifi_connected, bool wifi_synced, const
                 uint32_t msg_age_ms, uint32_t now_ms) {
   canvas.fillScreen(TFT_BLACK);
 
+  if (msg && msg[0]) {
+    char ascii_msg[256];
+    utf8_to_ascii(msg, ascii_msg, sizeof(ascii_msg));
+
+    canvas.setFont(&lgfx::fonts::Font2);
+    canvas.setTextColor(TFT_WHITE, TFT_BLACK);
+    canvas.setTextDatum(lgfx::TC_DATUM);
+
+    const int WRAP_W = 190;
+    int line_h = canvas.fontHeight() + 2;
+
+    // Build wrapped lines by accumulating words until they exceed WRAP_W
+    char lines[8][64] = {};
+    int n = 0;
+    char buf[256];
+    strncpy(buf, ascii_msg, sizeof(buf) - 1);
+    char cur[64] = "";
+    char *word = strtok(buf, " \n");
+    while (word && n < 8) {
+      char test[64];
+      snprintf(test, sizeof(test), "%s%s%s", cur, cur[0] ? " " : "", word);
+      if (canvas.textWidth(test) > WRAP_W && cur[0]) {
+        strncpy(lines[n++], cur, 63);
+        strncpy(cur, word, 63);
+      } else {
+        strncpy(cur, test, 63);
+      }
+      word = strtok(nullptr, " \n");
+    }
+    if (cur[0] && n < 8)
+      strncpy(lines[n++], cur, 63);
+
+    int y = CY - (n * line_h) / 2;
+    for (int i = 0; i < n; i++) {
+      canvas.drawString(lines[i], CX, y);
+      y += line_h;
+    }
+
+    tft.fillRect(0, 0, 240, 20, TFT_BLACK);
+    tft.fillRect(0, 220, 240, 20, TFT_BLACK);
+    tft.fillRect(0, 20, 20, 200, TFT_BLACK);
+    tft.fillRect(220, 20, 20, 200, TFT_BLACK);
+    canvas.pushSprite(20, 20);
+    return;
+  }
+
   // ── Second sweep arc (cyan 0–29 s, orange 30–59 s) ───────────────────────
   float sweep = t.tm_sec / 60.0f * 360.0f;
   if (sweep > 0.5f) {
@@ -204,17 +250,6 @@ void draw_frame(const struct tm &t, bool wifi_connected, bool wifi_synced, const
   canvas.setTextDatum(lgfx::TC_DATUM);
   canvas.drawString(date, CX, CY + 36);
 
-  // ── Message (slides up from below over 500 ms) ────────────────────────────
-  if (msg && msg[0]) {
-    char ascii_msg[256];
-    utf8_to_ascii(msg, ascii_msg, sizeof(ascii_msg));
-    int y = (msg_age_ms < 500) ? 168 + (int)((1.0f - msg_age_ms / 500.0f) * 24.0f) : 168;
-    canvas.setFont(&lgfx::fonts::FreeSans9pt7b);
-    canvas.setTextColor(TFT_YELLOW, TFT_BLACK);
-    canvas.setTextDatum(lgfx::TC_DATUM);
-    canvas.drawString(ascii_msg, CX, y);
-  }
-
   // Clear the 20 px border around the sprite every frame so no ghost pixels
   // accumulate from arc/circle drawing that clips slightly outside the canvas.
   tft.fillRect(0, 0, 240, 20, TFT_BLACK);    // top
@@ -232,4 +267,11 @@ void display_flip() {
   s_prefs.putInt("rotation", s_rotation); // persist across reboots
   Serial.printf("[DISPLAY] rotation -> %d (%s)\n", s_rotation,
                 s_rotation == 4 ? "mirrored" : "normal");
+}
+
+void display_set_rotation(int r) {
+  s_rotation = r;
+  tft.setRotation(s_rotation);
+  s_prefs.putInt("rotation", s_rotation);
+  Serial.printf("[DISPLAY] rotation -> %d\n", s_rotation);
 }
